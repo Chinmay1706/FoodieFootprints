@@ -59,8 +59,8 @@ function getDistance(userCoords,restaurantCoords){
 // heuristic function
 // returns coordinates for the suggested restaurant
 function suggestRestaurant(userCoords){
-      densityWeight = 0.33
-      distanceWeight = 0.67
+      densityWeight = 0.1
+      distanceWeight = 0.9
 
       lon = userCoords[0]
       lat = userCoords[1]
@@ -71,8 +71,8 @@ function suggestRestaurant(userCoords){
         curDistance = getDistance(userCoords,restaurantCoords);
         if(curDistance * distanceWeight + value[2] * densityWeight < minimumDistance ){
             minimumDistance = curDistance * distanceWeight + value[2] * densityWeight;
-            console.log(suggestedRestuarant)
             suggestedRestuarant = key;
+            console.log(suggestedRestuarant + " " + minimumDistance)
         }
       })
       return suggestedRestuarant
@@ -84,22 +84,29 @@ async function successLocation(position) {
   getRestaurants()
   userCoords = [position.coords.longitude, position.coords.latitude];
   suggestedRestuarant = suggestRestaurant(userCoords);
+  restaurantCoords = [restaurantMap[suggestedRestuarant][0],restaurantMap[suggestedRestuarant][1]]
   console.log(suggestedRestuarant)
+  console.log(restaurantCoords)
+  fcCoords = [73.84533,18.52218]
   // uses the suggested restaurant coordinates and current user coordinates and starts a path from current user location to that point
-  setupMap([restaurantMap[suggestedRestuarant][0],restaurantMap[suggestedRestuarant][1]])
+  setupMap(fcCoords,userCoords,restaurantCoords)
 }
 
 function errorLocation() {
-  setupMap([-2.24, 53.48])
+  setupMap([73.84533,18.52218])
 }
 
-function setupMap(center) {
+function setupMap(center, userCoords, restaurantCoords) {
+
   const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/streets-v11",
     center: center,
     zoom: 15
   })
+
+
+  getRoute(userCoords,restaurantCoords)
 
   const nav = new mapboxgl.NavigationControl()
   map.addControl(nav)
@@ -109,7 +116,28 @@ function setupMap(center) {
   })
 
   map.addControl(directions, "top-left")
+  map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+    enableHighAccuracy: true
+    },
+    trackUserLocation: true,
+    showUserHeading: true
+    }));
 
+    // Initialize the GeolocateControl.
+const geolocate = new mapboxgl.GeolocateControl({
+  positionOptions: {
+      enableHighAccuracy: true
+  },
+  trackUserLocation: true
+});
+// Add the control to the map.
+map.addControl(geolocate);
+// Set an event listener that fires
+// when a trackuserlocationend event occurs.
+geolocate.on('trackuserlocationend', () => {
+  console.log('A trackuserlocationend event has occurred.');
+});
 
 map.on('load', () => {
   map.addSource('trees', {
@@ -220,6 +248,52 @@ map.on('load', () => {
     'waterway-label'
   );
   });
+
+  async function getRoute(start, end) {
+    // make a directions request using cycling profile
+    // an arbitrary start will always be the same
+    // only the end or destination will change
+    const query = await fetch(
+      `https://api.mapbox.com/directions/v5/mapbox/cycling/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`,
+      { method: 'GET' }
+    );
+    const json = await query.json();
+    const data = json.routes[0];
+    const route = data.geometry.coordinates;
+    const geojson = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: route
+      }
+    };
+    // if the route already exists on the map, we'll reset it using setData
+    if (map.getSource('route')) {
+      map.getSource('route').setData(geojson);
+    }
+    // otherwise, we'll make a new request
+    else {
+      map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: {
+          type: 'geojson',
+          data: geojson
+        },
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#3887be',
+          'line-width': 5,
+          'line-opacity': 0.75
+        }
+      });
+    }
+    // add turn instructions here at the end
+  }
   
 }
 
@@ -227,3 +301,7 @@ map.on('load', () => {
 
 //   console.log(allCoordinates)
 // });
+
+
+// create a function to make a directions request
+

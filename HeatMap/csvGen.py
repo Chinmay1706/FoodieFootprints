@@ -77,7 +77,10 @@ def extract_geotagging_data(image_path):
     return None
 
 data = []
+print('Initialised data points array successfully...')
 directory = '/home/chinmay/Pictures/datasetSingleFolder'  # directory containing images
+print('Selected Dataset Directory...')
+print('Initiating image metadata extraction...')
 for filename in os.listdir(directory):
     if filename.endswith(".jpg") or filename.endswith(".jpeg"):
         image = Image.open(os.path.join(directory, filename))
@@ -86,14 +89,16 @@ for filename in os.listdir(directory):
             file = os.path.join(directory,filename)
             geotags = extract_geotagging_data(file)
             coordinates = get_coordinates(geotags)
-            print(coordinates)
+            # print(coordinates)
             if (coordinates != None) :
                 data.append([filename, *coordinates])
         except ValueError:
             print(f"No geographic coordinates found for {filename}")
+print('Image metadata extracted successfully.')
 data.sort()
+print('Data sorted successfully...')
 write_to_csv('coordinates.csv', data)
-
+print('data converted and stored to coordinates.csv')
 def csv_to_json(csv_file_path, json_file_path):
     with open(csv_file_path, 'r') as csv_file:
         csv_reader = csv.DictReader(csv_file)
@@ -111,3 +116,4 @@ def csv_to_json(csv_file_path, json_file_path):
         json.dump(data_list, json_file, indent=2)
 
 csv_to_json('coordinates.csv', 'coordinates.json')
+print('Data converted to json file successfully.')
