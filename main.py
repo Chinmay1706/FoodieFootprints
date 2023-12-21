@@ -23,3 +23,4 @@ fig = px.density_mapbox(
 fig.update_layout(mapbox_accesstoken=mapbox_token)
 fig.show()
 
+
