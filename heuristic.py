@@ -1,3 +1,6 @@
+from math import radians
+
+
 def restaurant_heuristic(current_coordinates, restaurant_coordinates, user_density):
     """
     Heuristic function to select a restaurant based on distance and user density.
@@ -15,14 +18,16 @@ def restaurant_heuristic(current_coordinates, restaurant_coordinates, user_densi
     density_weight = 0.4
 
     # Calculate distance between user and restaurant (you can use Haversine formula)
-    distance = calculate_distance(current_coordinates, restaurant_coordinates)
+    distance = haversine_distance(current_coordinates, restaurant_coordinates)
+    #distance = euclidean_distance(current_coordinates, restaurant_coordinates)
+    #distance = manhattan_distance(current_coordinates, restaurant_coordinates)
 
     # Combine distance and user density using the defined weights
     heuristic_score = (distance_weight * distance) + (density_weight * user_density)
 
     return heuristic_score
 
-def calculate_distance(coord1, coord2):
+def haversine_distance(coord1, coord2):
     """
     Calculate the Haversine distance between two sets of coordinates.
 
@@ -50,5 +55,50 @@ def calculate_distance(coord1, coord2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
     distance = R * c
-
+    # print("Haversine Distance:", distance)
     return distance
+
+def euclidean_distance(coord1, coord2):
+    """
+    Calculate the Euclidean distance between two sets of coordinates.
+
+    Parameters:
+    - coord1: Tuple (latitude, longitude) of the first location.
+    - coord2: Tuple (latitude, longitude) of the second location.
+
+    Returns:
+    - Euclidean distance between the two locations.
+    """
+    from math import sqrt
+
+    # lat1, lon1 = coord1
+    # lat2, lon2 = coord2
+    lat1, lon1 = radians(coord1[0]), radians(coord1[1])
+    lat2, lon2 = radians(coord2[0]), radians(coord2[1])
+
+    # Euclidean distance formula
+    distance = sqrt((lat2 - lat1)**2 + (lon2 - lon1)**2)
+    print("Euclidean Distance:", distance)
+    return distance
+
+def manhattan_distance(coord1, coord2):
+    """
+    Calculate the Manhattan distance between two sets of coordinates.
+
+    Parameters:
+    - coord1: Tuple (latitude, longitude) of the first location.
+    - coord2: Tuple (latitude, longitude) of the second location.
+
+    Returns:
+    - Manhattan distance between the two locations.
+    """
+    # lat1, lon1 = coord1
+    # lat2, lon2 = coord2
+    lat1, lon1 = radians(coord1[0]), radians(coord1[1])
+    lat2, lon2 = radians(coord2[0]), radians(coord2[1])
+
+    # Manhattan distance formula
+    distance = abs(lat2 - lat1) + abs(lon2 - lon1)
+    print("Manhattan Distance:", distance)
+    return distance
+
