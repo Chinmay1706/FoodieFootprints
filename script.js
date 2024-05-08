@@ -7,7 +7,7 @@ navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
 })
 let restaurantMap = {};
 // lat, lon, density
-// restaurantMap['Modern Cafe'] = [73.85131,18.52689, 0];
+restaurantMap['Modern Cafe'] = [73.85131,18.52689, 0];
 restaurantMap['Panchali'] = [73.85027,18.52586, 0];
 restaurantMap['Surabhi'] = [73.84984,18.52541, 0];
 restaurantMap['Gandharva'] = [73.84901,18.52260, 0];
