@@ -33,6 +33,12 @@ def get_decimal_from_dms(dms, ref):
 
     return round(degrees + minutes + seconds, 5)
 
+# def get_coordinates(geotags):
+#     lat = get_decimal_from_dms(geotags['GPSLatitude'], geotags['GPSLatitudeRef'])
+#     lon = get_decimal_from_dms(geotags['GPSLongitude'], geotags['GPSLongitudeRef'])
+
+#     return (lat,lon)
+
 def get_coordinates(geotags):
     try:
         # Check if all required keys are present
@@ -46,11 +52,9 @@ def get_coordinates(geotags):
             return lat, lon
         else:
             print("Missing required geotag information.")
-            input()
             return None
     except Exception as e:
         print(f"Error extracting coordinates: {e}")
-        input()
         return None
 
 
@@ -76,11 +80,10 @@ def extract_geotagging_data(image_path):
         print(image_path)
     return None
 
-data = []
-print('Initialised data points array successfully...')
-directory = '/home/chinmay/Pictures/datasetSingleFolder'  # directory containing images
 print('Selected Dataset Directory...')
 print('Initiating image metadata extraction...')
+data = []
+directory = '/home/chinmay/Pictures/datasetSingleFolder'  # directory containing images
 for filename in os.listdir(directory):
     if filename.endswith(".jpg") or filename.endswith(".jpeg"):
         image = Image.open(os.path.join(directory, filename))
@@ -117,3 +120,11 @@ def csv_to_json(csv_file_path, json_file_path):
 
 csv_to_json('coordinates.csv', 'coordinates.json')
 print('Data converted to json file successfully.')
+
+            geotags = get_geotagging(exif)
+            coordinates = get_coordinates(geotags)
+            data.append([filename, *coordinates])
+        except ValueError:
+            print(f"No geographic coordinates found for {filename}")
+
+write_to_csv('coordinates.csv', data)
